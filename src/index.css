@@ -6,3 +6,35 @@
   -webkit-user-select: none;
   -webkit-app-region: drag;
 }
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.markdown > div > * {
+  @apply my-3;
+}
+.markdown h1 {
+  @apply text-5xl;
+}
+.markdown h2 {
+  @apply text-4xl;
+}
+.markdown h3 {
+  @apply text-3xl;
+}
+.markdown h4 {
+  @apply text-2xl;
+}
+.markdown h5 {
+  @apply text-xl;
+}
+.markdown h6 {
+  @apply text-lg;
+}
+
+.markdown blockquote {
+  @apply border-l-slate-300;
+  @apply border-l-4;
+  @apply pl-3;
+}

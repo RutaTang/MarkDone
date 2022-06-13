@@ -17,6 +17,7 @@ const createWindow = () => {
     height: 600,
     webPreferences: {
       preload: `${__dirname}/preload.js`,
+      spellcheck: false,
     },
   });
   win.loadURL("http://localhost:3000");
