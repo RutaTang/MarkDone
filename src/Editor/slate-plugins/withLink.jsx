@@ -78,7 +78,6 @@ const withLink = (editor) => {
             const wholeMatched = match[0];
             const groupOneMatched = match[1];
             const groupTwoMatched = match[2];
-            console.log(groupOneMatched);
             const startIdx = match.index;
             const range = {
               focus: {
