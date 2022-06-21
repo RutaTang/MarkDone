@@ -4,6 +4,7 @@ const {
   BrowserWindow,
   ipcMain,
   globalShortcut,
+  shell,
 } = require("electron");
 const path = require("path");
 const fs = require("fs");
@@ -70,5 +71,8 @@ app.whenReady().then(() => {
     fs.writeFile(r.path, r.data, (err) => {
       console.log(err);
     });
+  });
+  ipcMain.on("openUrlInBrowser", (e, url) => {
+    shell.openExternal(url);
   });
 });

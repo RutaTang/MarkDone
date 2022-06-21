@@ -3,10 +3,15 @@ import { Slate, Editable, withReact, ReactEditor } from "slate-react";
 import { useEffect, useRef, useCallback } from "react";
 import withHeading, { renderHeadingElement } from "./slate-plugins/withHeading";
 import withQuote, { renderQuoteElement } from "./slate-plugins/withQuote";
+import withHorizontalRule, {
+  renderHorizontalRuleElement,
+} from "./slate-plugins/withHoriontalRule";
+import withLink, { renderLinkElement } from "./slate-plugins/withLink";
+import withDefault from "./slate-plugins/withDefault";
 
 const initialValue = [
   {
-    type: "paragraph",
+    type: "ELEMENT_P",
     children: [{ text: "A line of text in a paragraph." }],
   },
 ];
@@ -16,15 +21,35 @@ const renderDefaultElement = ({ attributes, children }) => {
 };
 
 const MKEditor = () => {
-  const editorRef = useRef(withQuote(withHeading(withReact(createEditor()))));
+  const editorRef = useRef(
+    withLink(
+      withHorizontalRule(
+        withQuote(withHeading(withDefault(withReact(createEditor()))))
+      )
+    )
+  );
   const renderElement = useCallback((props) => {
     return (
       renderHeadingElement(props) ||
       renderQuoteElement(props) ||
+      renderHorizontalRuleElement(props) ||
+      renderLinkElement(props) ||
       renderDefaultElement(props)
     );
   }, []);
   const onKeyDownHanlder = useCallback((e) => {
+    if (e.ctrlKey && e.altKey && e.code == "Backquote") {
+      e.preventDefault();
+      const editor = editorRef.current;
+      Transforms.insertNodes(
+        editor,
+        { type: "ELEMENT_H1", children: [] },
+        {
+          at: [editor.children.length],
+        }
+      );
+      Transforms.select(editor, [editor.children.length - 1]);
+    }
   });
   useEffect(() => {
     ReactEditor.focus(editorRef.current);

@@ -47,7 +47,10 @@ const createHeadingElement = (shortcutvalue) => {
 };
 
 const withHeading = (editor) => {
-  const { deleteBackward, insertText, insertSoftBreak, insertBreak } = editor;
+  const { deleteBackward, insertText, insertSoftBreak} = editor;
+
+  // if text is space and parent node is paragraph element
+  // delete previous text and set current block node to heading node
   editor.insertText = (text) => {
     const { selection } = editor;
     if (text == " " && selection && Range.isCollapsed(selection)) {
@@ -60,18 +63,23 @@ const withHeading = (editor) => {
       const beforeText = Editor.string(editor, range);
       const type = VALUE_TO_TYPE.get(beforeText);
       if (type) {
-        console.log(type);
-        Transforms.delete(editor, {
-          at: range,
-        });
-        Transforms.setNodes(editor, createHeadingElement(type), {
-          match: (n) => Editor.isBlock(editor, n),
-        });
-        return;
+        const [node] = parentBlock;
+        if (node.type === "ELEMENT_P") {
+          Transforms.delete(editor, {
+            at: range,
+          });
+          Transforms.setNodes(editor, createHeadingElement(type), {
+            match: (n) => Editor.isBlock(editor, n),
+          });
+          return;
+        }
       }
     }
     insertText(text);
   };
+
+  // if selection is at the begin of heading node
+  // set current block node to paragraph node and insert certain number of # with correspoding heading level
   editor.deleteBackward = (...args) => {
     const { selection } = editor;
     if (selection && Range.isCollapsed(selection)) {
@@ -95,6 +103,7 @@ const withHeading = (editor) => {
     }
     deleteBackward(...args);
   };
+
   editor.insertSoftBreak = (...args) => {
     const { selection } = editor;
     if (selection && Range.isCollapsed(selection)) {

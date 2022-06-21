@@ -85,7 +85,6 @@ const withQuote = (editor) => {
         }
       }
     }
-    console.log("QUOT")
     insertSoftBreak(...args);
   };
   return editor;

@@ -38,3 +38,15 @@
   @apply border-l-4;
   @apply pl-3;
 }
+
+.markdown code {
+  @apply block;
+  @apply bg-gray-200;
+  @apply px-3;
+  @apply py-2;
+  @apply rounded-sm;
+}
+
+.markdown a{
+  @apply text-sky-500;
+}

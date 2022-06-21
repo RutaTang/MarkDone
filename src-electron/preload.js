@@ -14,4 +14,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
       previousFileName,
       currentFileName
     ),
+  openUrlInBrowser: (url) => {
+    ipcRenderer.send("openUrlInBrowser", url);
+  },
 });
