@@ -7,18 +7,25 @@ import withHorizontalRule, {
   renderHorizontalRuleElement,
 } from "./slate-plugins/withHoriontalRule";
 import withLink, { renderLinkElement } from "./slate-plugins/withLink";
-import withDefault from "./slate-plugins/withDefault";
+import withDefault, { renderDefaultElement } from "./slate-plugins/withDefault";
 
 const initialValue = [
   {
     type: "ELEMENT_P",
-    children: [{ text: "A line of text in a paragraph." }],
+    children: [
+      {
+        type: "ELEMENT_LINK",
+        url: "ruta",
+        title: "ruta",
+        children: [{ text: "ruta" }],
+      },
+      {
+        type: "ELEMENT_INVISIBLE",
+        children: [{ text: "" }],
+      },
+    ],
   },
 ];
-
-const renderDefaultElement = ({ attributes, children }) => {
-  return <p {...attributes}>{children}</p>;
-};
 
 const MKEditor = () => {
   const editorRef = useRef(

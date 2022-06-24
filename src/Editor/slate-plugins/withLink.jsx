@@ -1,12 +1,12 @@
-import { Node, Editor, Range, Transforms } from "slate";
+import { Node, Editor, Range, Transforms, Text, Path } from "slate";
 import { ExternalLink } from "lucide-react";
 
-const renderLinkElement = ({ attribute, children, element }) => {
+const renderLinkElement = ({ attributes, children, element }) => {
   switch (element.type) {
     case "ELEMENT_LINK": {
       return (
         <a
-          {...attribute}
+          {...attributes}
           contentEditable={false}
           className="cursor-pointer select-none inline-flex items-center space-x-1"
           onClick={(e) => {
@@ -15,9 +15,12 @@ const renderLinkElement = ({ attribute, children, element }) => {
           }}
         >
           {children}
-          <ExternalLink size={15}/>
+          <ExternalLink size={15} />
         </a>
       );
+    }
+    case "ELEMENT_INVISIBLE": {
+      return <span {...attributes}>{children}</span>;
     }
     default: {
       return null;
@@ -26,14 +29,7 @@ const renderLinkElement = ({ attribute, children, element }) => {
 };
 
 const withLink = (editor) => {
-  const {
-    onChange,
-    deleteBackward,
-    insertText,
-    insertBreak,
-    isInline,
-    isVoid,
-  } = editor;
+  const { onChange, isInline } = editor;
   editor.isInline = (element) => {
     switch (element.type) {
       case "ELEMENT_LINK":
@@ -42,6 +38,8 @@ const withLink = (editor) => {
     return isInline(element);
   };
   editor.onChange = () => {
+    console.log("change is called");
+    onChange();
     const selection = editor.selection;
     if (selection && Range.isCollapsed(selection)) {
       const linkParentNodeEntry = Editor.above(editor, {
@@ -53,25 +51,33 @@ const withLink = (editor) => {
         // transfrom link to plain text
         //
         const [node, path] = linkParentNodeEntry;
-        Transforms.delete(editor, {
+        Transforms.removeNodes(editor, {
           at: path,
           match: (n) => n.type === "ELEMENT_LINK",
+        })
+        Transforms.insertText(editor, `[${node.title}](${node.url})`, {
+          at: editor.selection,
         });
-        Transforms.insertText(editor, `[${node.title}](${node.url})`);
       } else {
         //if current selection is not in ELEMENT_LINK
         //check whether markdown link
         //if so, change it a tag
-        const blockParentNodeEntry = Editor.above(editor, {
-          at: selection,
-          match: (n) => Editor.isBlock(editor, n),
-        });
-        if (blockParentNodeEntry) {
-          const [, path] = blockParentNodeEntry;
-          const start = Editor.start(editor, path);
-          const end = Editor.end(editor, path);
-          const range = { anchor: start, focus: end };
-          const wholeString = Editor.string(editor, range);
+        const textNodeEntries = [
+          ...Editor.nodes(editor, {
+            at: [],
+            match: (on, path) => {
+              const isText = Text.isText(on);
+              const isInLinkNode = !!Editor.above(editor, {
+                at: path,
+                match: (n) => n.type === "ELEMENT_LINK",
+              });
+              return isText && !isInLinkNode;
+            },
+          }),
+        ];
+        for (const textNodeEntry of textNodeEntries) {
+          const [textNode, path] = textNodeEntry;
+          const wholeString = textNode.text;
           const pattern = /(?<!!)\[(.+?)\]\((.+?)\)/g;
           const matches = wholeString.matchAll(pattern);
           for (const match of matches) {
@@ -81,11 +87,11 @@ const withLink = (editor) => {
             const startIdx = match.index;
             const range = {
               focus: {
-                path: start.path,
+                path: path,
                 offset: startIdx,
               },
               anchor: {
-                path: start.path,
+                path: path,
                 offset: startIdx + wholeMatched.length,
               },
             };
@@ -101,7 +107,8 @@ const withLink = (editor) => {
                     children: [{ text: groupOneMatched }],
                   },
                   {
-                    text: "",
+                    type: "ELEMENT_INVISIBLE",
+                    children: [{ text: "" }],
                   },
                 ],
                 { at: range.focus }
@@ -111,7 +118,6 @@ const withLink = (editor) => {
         }
       }
     }
-    onChange();
   };
   return editor;
 };
