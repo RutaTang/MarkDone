@@ -1,14 +1,15 @@
-import { Transforms, Range, Editor, Point } from "slate";
+import { Transforms, Range, Editor, Point, Text } from "slate";
 
 const renderDefaultElement = ({ attributes, children, element }) => {
   switch (element.type) {
     case "ELEMENT_INVISIBLE": {
-      return <span {...attributes}>{children}</span>; }
-    case "ELEMENT_P":{
+      return <span {...attributes}>{children}</span>;
+    }
+    case "ELEMENT_P": {
       return <p {...attributes}>{children}</p>;
     }
     default: {
-      throw new Error("Unknown tag")
+      throw new Error("Unknown tag");
     }
   }
 };
@@ -24,6 +25,7 @@ const withDefault = (editor) => {
   };
   editor.insertBreak = () => {
     //check where insert break
+    // console.log([...Editor.nodes(editor, { at: [], match: (n) => Text.isText(n) })]);
     const selection = editor.selection;
     if (selection && Range.isCollapsed(selection)) {
       const { focus } = selection;
@@ -46,4 +48,4 @@ const withDefault = (editor) => {
 };
 
 export default withDefault;
-export {renderDefaultElement}
+export { renderDefaultElement };

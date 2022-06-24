@@ -54,7 +54,7 @@ const withItalic = (editor) => {
         for (const textNodeEntry of textNodeEntries) {
           const [textNode, path] = textNodeEntry;
           const wholeString = textNode.text;
-          const pattern = /(?<!\*)[*]{1}(\w+)[*]{1}(?!\*)/g;
+          const pattern = /(?<!\*)[*]{1}(?!\s)(.+)(?!<\s)[*]{1}(?!\*)/g;
           const matches = wholeString.matchAll(pattern);
           for (const match of matches) {
             const wholeMatched = match[0];

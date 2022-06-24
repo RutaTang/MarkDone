@@ -29,7 +29,6 @@ const withBold = (editor) => {
         match: (n) => n.type === "ELEMENT_BOLD",
       });
       if (boldParentNodeEntry) {
-        console.log(1);
         const [node, path] = boldParentNodeEntry;
         Transforms.removeNodes(editor, {
           at: path,
@@ -39,7 +38,6 @@ const withBold = (editor) => {
           at: editor.selection,
         });
       } else {
-        console.log(2);
         const textNodeEntries = [
           ...Editor.nodes(editor, {
             at: [],
@@ -56,7 +54,7 @@ const withBold = (editor) => {
         for (const textNodeEntry of textNodeEntries) {
           const [textNode, path] = textNodeEntry;
           const wholeString = textNode.text;
-          const pattern = /[*]{2}(.+)[*]{2}/g;
+          const pattern = /[*]{2}(?!\s)(.+)(?!<\s)[*]{2}/g;
           const matches = wholeString.matchAll(pattern);
           for (const match of matches) {
             const wholeMatched = match[0];
