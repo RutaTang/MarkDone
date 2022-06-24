@@ -10,7 +10,7 @@
 - [x] Quote
 - [x] Horizontal Rule
 - [x] Bold 
-- [ ] Italic
+- [x] Italic
 - [ ] Ordered List
 - [ ] Unordered List
 - [ ] Code
