@@ -9,7 +9,7 @@
 - [x] Link
 - [x] Quote
 - [x] Horizontal Rule
-- [ ] Bold 
+- [x] Bold 
 - [ ] Italic
 - [ ] Ordered List
 - [ ] Unordered List

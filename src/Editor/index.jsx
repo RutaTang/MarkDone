@@ -8,14 +8,15 @@ import withHorizontalRule, {
 } from "./slate-plugins/withHoriontalRule";
 import withLink, { renderLinkElement } from "./slate-plugins/withLink";
 import withDefault, { renderDefaultElement } from "./slate-plugins/withDefault";
+import withBold, { renderBoldElement } from "./slate-plugins/withBold";
+import withItalic, { renderItalicElement } from "./slate-plugins/withItalic";
 
 const initialValue = [
   {
     type: "ELEMENT_P",
     children: [
       {
-        type: "ELEMENT_LINK",
-        url: "ruta",
+        type: "ELEMENT_BOLD",
         title: "ruta",
         children: [{ text: "ruta" }],
       },
@@ -29,9 +30,13 @@ const initialValue = [
 
 const MKEditor = () => {
   const editorRef = useRef(
-    withLink(
-      withHorizontalRule(
-        withQuote(withHeading(withDefault(withReact(createEditor()))))
+    withItalic(
+      withBold(
+        withLink(
+          withHorizontalRule(
+            withQuote(withHeading(withDefault(withReact(createEditor()))))
+          )
+        )
       )
     )
   );
@@ -41,6 +46,8 @@ const MKEditor = () => {
       renderQuoteElement(props) ||
       renderHorizontalRuleElement(props) ||
       renderLinkElement(props) ||
+      renderBoldElement(props) ||
+      renderItalicElement(props) ||
       renderDefaultElement(props)
     );
   }, []);

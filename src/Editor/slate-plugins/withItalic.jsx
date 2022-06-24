@@ -1,23 +1,9 @@
 import { Editor, Range, Transforms, Text } from "slate";
-import { ExternalLink } from "lucide-react";
 
-const renderLinkElement = ({ attributes, children, element }) => {
+const renderItalicElement = ({ attributes, children, element }) => {
   switch (element.type) {
-    case "ELEMENT_LINK": {
-      return (
-        <a
-          {...attributes}
-          contentEditable={false}
-          className="cursor-pointer select-none inline-flex items-center space-x-1"
-          onClick={(e) => {
-            e.preventDefault();
-            electronAPI.openUrlInBrowser(element.url);
-          }}
-        >
-          {children}
-          <ExternalLink size={15} />
-        </a>
-      );
+    case "ELEMENT_ITALIC": {
+      return <em {...attributes}>{children}</em>;
     }
     default: {
       return null;
@@ -25,11 +11,11 @@ const renderLinkElement = ({ attributes, children, element }) => {
   }
 };
 
-const withLink = (editor) => {
+const withItalic = (editor) => {
   const { onChange, isInline } = editor;
   editor.isInline = (element) => {
     switch (element.type) {
-      case "ELEMENT_LINK":
+      case "ELEMENT_ITALIC":
         return true;
     }
     return isInline(element);
@@ -38,26 +24,20 @@ const withLink = (editor) => {
     onChange();
     const selection = editor.selection;
     if (selection && Range.isCollapsed(selection)) {
-      const linkParentNodeEntry = Editor.above(editor, {
+      const italicParentNodeEntry = Editor.above(editor, {
         at: selection,
-        match: (n) => n.type === "ELEMENT_LINK",
+        match: (n) => n.type === "ELEMENT_ITALIC",
       });
-      if (linkParentNodeEntry) {
-        // if current selection is in ELEMENT_LINK
-        // transfrom link to plain text
-        //
-        const [node, path] = linkParentNodeEntry;
+      if (italicParentNodeEntry) {
+        const [node, path] = italicParentNodeEntry;
         Transforms.removeNodes(editor, {
           at: path,
-          match: (n) => n.type === "ELEMENT_LINK",
+          match: (n) => n.type === "ELEMENT_ITALIC",
         });
-        Transforms.insertText(editor, `[${node.title}](${node.url})`, {
+        Transforms.insertText(editor, `*${node.title}*`, {
           at: editor.selection,
         });
       } else {
-        //if current selection is not in ELEMENT_LINK
-        //check whether markdown link
-        //if so, change it a tag
         const textNodeEntries = [
           ...Editor.nodes(editor, {
             at: [],
@@ -65,7 +45,7 @@ const withLink = (editor) => {
               const isText = Text.isText(on);
               const isInLinkNode = !!Editor.above(editor, {
                 at: path,
-                match: (n) => n.type === "ELEMENT_LINK",
+                match: (n) => n.type === "ELEMENT_ITALIC",
               });
               return isText && !isInLinkNode;
             },
@@ -74,12 +54,11 @@ const withLink = (editor) => {
         for (const textNodeEntry of textNodeEntries) {
           const [textNode, path] = textNodeEntry;
           const wholeString = textNode.text;
-          const pattern = /(?<!!)\[(.+?)\]\((.+?)\)/g;
+          const pattern = /(?<!\*)[*]{1}(\w+)[*]{1}(?!\*)/g;
           const matches = wholeString.matchAll(pattern);
           for (const match of matches) {
             const wholeMatched = match[0];
             const groupOneMatched = match[1];
-            const groupTwoMatched = match[2];
             const startIdx = match.index;
             const range = {
               focus: {
@@ -97,9 +76,8 @@ const withLink = (editor) => {
                 editor,
                 [
                   {
-                    type: "ELEMENT_LINK",
+                    type: "ELEMENT_ITALIC",
                     title: groupOneMatched,
-                    url: groupTwoMatched,
                     children: [{ text: groupOneMatched }],
                   },
                   {
@@ -117,5 +95,5 @@ const withLink = (editor) => {
   };
   return editor;
 };
-export default withLink;
-export { renderLinkElement };
+export default withItalic;
+export { renderItalicElement };

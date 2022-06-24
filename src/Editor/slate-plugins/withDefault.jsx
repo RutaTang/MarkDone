@@ -3,10 +3,8 @@ import { Transforms, Range, Editor, Point } from "slate";
 const renderDefaultElement = ({ attributes, children, element }) => {
   switch (element.type) {
     case "ELEMENT_INVISIBLE": {
-      return <span {...attributes}>{children}</span>;
-    }
+      return <span {...attributes}>{children}</span>; }
     case "ELEMENT_P":{
-
       return <p {...attributes}>{children}</p>;
     }
     default: {
