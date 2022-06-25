@@ -7,6 +7,7 @@ import withHorizontalRule, {
   renderHorizontalRuleElement,
 } from "./slate-plugins/withHoriontalRule";
 import withLink, { renderLinkElement } from "./slate-plugins/withLink";
+import withImage, { renderImageElement } from "./slate-plugins/withImage";
 import withDefault, { renderDefaultElement } from "./slate-plugins/withDefault";
 import withBold, { renderBoldElement } from "./slate-plugins/withBold";
 import withItalic, { renderItalicElement } from "./slate-plugins/withItalic";
@@ -30,11 +31,13 @@ const initialValue = [
 
 const MKEditor = () => {
   const editorRef = useRef(
-    withItalic(
-      withBold(
-        withLink(
-          withHorizontalRule(
-            withQuote(withHeading(withDefault(withReact(createEditor()))))
+    withImage(
+      withItalic(
+        withBold(
+          withLink(
+            withHorizontalRule(
+              withQuote(withHeading(withDefault(withReact(createEditor()))))
+            )
           )
         )
       )
@@ -48,6 +51,7 @@ const MKEditor = () => {
       renderLinkElement(props) ||
       renderBoldElement(props) ||
       renderItalicElement(props) ||
+      renderImageElement(props) ||
       renderDefaultElement(props)
     );
   }, []);

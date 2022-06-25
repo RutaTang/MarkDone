@@ -29,7 +29,10 @@ const withDefault = (editor) => {
     const selection = editor.selection;
     if (selection && Range.isCollapsed(selection)) {
       const { focus } = selection;
-      const parentNodeEntry = Editor.above(editor, { at: selection });
+      const parentNodeEntry = Editor.above(editor, {
+        at: selection,
+        match: (n) => Editor.isBlock(editor, n),
+      });
       if (parentNodeEntry) {
         const [, path] = parentNodeEntry;
         const end = Editor.end(editor, path);
