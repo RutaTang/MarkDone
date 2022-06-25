@@ -51,9 +51,6 @@ const withImage = (editor) => {
           at: Editor.start(editor, path),
         });
       } else {
-        //if current selection is not in ELEMENT_LINK
-        //check whether markdown link
-        //if so, change it a tag
         const textNodeEntries = [
           ...Editor.nodes(editor, {
             at: [],

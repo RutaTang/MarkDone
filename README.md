@@ -11,6 +11,7 @@
 - [x] Horizontal Rule
 - [x] Bold 
 - [x] Italic
+- [x] Image
 - [ ] Ordered List
 - [ ] Unordered List
 - [ ] Code
