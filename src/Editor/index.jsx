@@ -11,19 +11,14 @@ import withImage, { renderImageElement } from "./slate-plugins/withImage";
 import withDefault, { renderDefaultElement } from "./slate-plugins/withDefault";
 import withBold, { renderBoldElement } from "./slate-plugins/withBold";
 import withItalic, { renderItalicElement } from "./slate-plugins/withItalic";
+import withList, { renderListElement } from "./slate-plugins/withList";
 
 const initialValue = [
   {
     type: "ELEMENT_P",
     children: [
       {
-        type: "ELEMENT_BOLD",
-        title: "ruta",
-        children: [{ text: "ruta" }],
-      },
-      {
-        type: "ELEMENT_INVISIBLE",
-        children: [{ text: "" }],
+        text:""
       },
     ],
   },
@@ -31,12 +26,14 @@ const initialValue = [
 
 const MKEditor = () => {
   const editorRef = useRef(
-    withImage(
-      withItalic(
-        withBold(
-          withLink(
-            withHorizontalRule(
-              withQuote(withHeading(withDefault(withReact(createEditor()))))
+    withList(
+      withImage(
+        withItalic(
+          withBold(
+            withLink(
+              withHorizontalRule(
+                withQuote(withHeading(withDefault(withReact(createEditor()))))
+              )
             )
           )
         )
@@ -52,6 +49,7 @@ const MKEditor = () => {
       renderBoldElement(props) ||
       renderItalicElement(props) ||
       renderImageElement(props) ||
+      renderListElement(props) ||
       renderDefaultElement(props)
     );
   }, []);

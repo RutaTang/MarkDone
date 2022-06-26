@@ -2,11 +2,11 @@ import { Transforms, Range, Editor, Point, Text } from "slate";
 
 const renderDefaultElement = ({ attributes, children, element }) => {
   switch (element.type) {
-    case "ELEMENT_INVISIBLE": {
-      return <span {...attributes}>{children}</span>;
-    }
     case "ELEMENT_P": {
       return <p {...attributes}>{children}</p>;
+    }
+    case "ELEMENT_INLINE_TEXT":{
+      return <span {...attributes}>{children}</span>
     }
     default: {
       throw new Error("Unknown tag");
@@ -18,7 +18,7 @@ const withDefault = (editor) => {
   const { insertBreak, isInline } = editor;
   editor.isInline = (element) => {
     switch (element.type) {
-      case "ELEMENT_INVISIBLE":
+      case "ELEMENT_INLINE_TEXT":
         return true;
     }
     return isInline(element);

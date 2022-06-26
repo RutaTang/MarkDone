@@ -47,6 +47,10 @@
   @apply rounded-sm;
 }
 
-.markdown a{
+.markdown a {
   @apply text-sky-500;
+}
+
+.markdown ul {
+  list-style-type: circle;
 }

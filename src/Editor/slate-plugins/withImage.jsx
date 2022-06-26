@@ -1,4 +1,4 @@
-import { Editor, Range, Transforms, Text, Node, Path } from "slate";
+import { Editor, Range, Transforms, Text,  Path } from "slate";
 
 const renderImageElement = ({ attributes, children, element }) => {
   switch (element.type) {
@@ -17,7 +17,7 @@ const renderImageElement = ({ attributes, children, element }) => {
 };
 
 const withImage = (editor) => {
-  const { onChange, isInline, insertBreak, insertText, isVoid } = editor;
+  const { onChange, isVoid } = editor;
   editor.isVoid = (element) => {
     switch (element.type) {
       case "ELEMENT_IMAGE":

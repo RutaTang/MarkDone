@@ -47,12 +47,12 @@ const withLink = (editor) => {
         // transfrom link to plain text
         //
         const [node, path] = linkParentNodeEntry;
-        Transforms.removeNodes(editor, {
+        Transforms.setNodes(editor,{type:"ELEMENT_INLINE_TEXT"}, {
           at: path,
           match: (n) => n.type === "ELEMENT_LINK",
         });
         Transforms.insertText(editor, `[${node.title}](${node.url})`, {
-          at: editor.selection,
+          at: path,
         });
       } else {
         //if current selection is not in ELEMENT_LINK
@@ -101,10 +101,6 @@ const withLink = (editor) => {
                     title: groupOneMatched,
                     url: groupTwoMatched,
                     children: [{ text: groupOneMatched }],
-                  },
-                  {
-                    type: "ELEMENT_INVISIBLE",
-                    children: [{ text: "" }],
                   },
                 ],
                 { at: range.focus }

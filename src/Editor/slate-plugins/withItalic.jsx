@@ -30,12 +30,12 @@ const withItalic = (editor) => {
       });
       if (italicParentNodeEntry) {
         const [node, path] = italicParentNodeEntry;
-        Transforms.removeNodes(editor, {
+        Transforms.setNodes(editor,{type:"ELEMENT_INLINE_TEXT"}, {
           at: path,
           match: (n) => n.type === "ELEMENT_ITALIC",
         });
         Transforms.insertText(editor, `*${node.title}*`, {
-          at: editor.selection,
+          at: path,
         });
       } else {
         const textNodeEntries = [
@@ -79,10 +79,6 @@ const withItalic = (editor) => {
                     type: "ELEMENT_ITALIC",
                     title: groupOneMatched,
                     children: [{ text: groupOneMatched }],
-                  },
-                  {
-                    type: "ELEMENT_INVISIBLE",
-                    children: [{ text: "" }],
                   },
                 ],
                 { at: range.focus }

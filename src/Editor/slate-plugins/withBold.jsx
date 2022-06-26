@@ -1,4 +1,4 @@
-import { Editor, Range, Transforms, Text } from "slate";
+import { Editor, Range, Transforms, Text, Path, Point } from "slate";
 
 const renderBoldElement = ({ attributes, children, element }) => {
   switch (element.type) {
@@ -30,12 +30,17 @@ const withBold = (editor) => {
       });
       if (boldParentNodeEntry) {
         const [node, path] = boldParentNodeEntry;
-        Transforms.removeNodes(editor, {
-          at: path,
-          match: (n) => n.type === "ELEMENT_BOLD",
-        });
+        Transforms.setNodes(
+          editor,
+          {
+            type: "ELEMENT_INLINE_TEXT",
+          },
+          {
+            at: path,
+          }
+        );
         Transforms.insertText(editor, `**${node.title}**`, {
-          at: editor.selection,
+          at: path,
         });
       } else {
         const textNodeEntries = [
@@ -54,11 +59,12 @@ const withBold = (editor) => {
         for (const textNodeEntry of textNodeEntries) {
           const [textNode, path] = textNodeEntry;
           const wholeString = textNode.text;
-          const pattern = /[*]{2}(?!\s)(.+)(?!<\s)[*]{2}/g;
+          const pattern = /[*]{2}(?!\s)(.+?)(?!<\s)[*]{2}/g;
           const matches = wholeString.matchAll(pattern);
           for (const match of matches) {
             const wholeMatched = match[0];
             const groupOneMatched = match[1];
+            console.log(wholeMatched, groupOneMatched);
             const startIdx = match.index;
             const range = {
               focus: {
@@ -79,10 +85,6 @@ const withBold = (editor) => {
                     type: "ELEMENT_BOLD",
                     title: groupOneMatched,
                     children: [{ text: groupOneMatched }],
-                  },
-                  {
-                    type: "ELEMENT_INVISIBLE",
-                    children: [{ text: "" }],
                   },
                 ],
                 { at: range.focus }
