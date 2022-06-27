@@ -1,7 +1,10 @@
 import { createEditor, Transforms, Editor } from "slate";
 import { Slate, Editable, withReact, ReactEditor } from "slate-react";
 import { useEffect, useRef, useCallback } from "react";
-import withHeading, { renderHeadingElement } from "./slate-plugins/withHeading";
+import withHeading, {
+  renderHeadingElement,
+  onKeyDown as onKeyDownForHeading,
+} from "./slate-plugins/withHeading";
 import withQuote, { renderQuoteElement } from "./slate-plugins/withQuote";
 import withHorizontalRule, {
   renderHorizontalRuleElement,
@@ -11,14 +14,17 @@ import withImage, { renderImageElement } from "./slate-plugins/withImage";
 import withDefault, { renderDefaultElement } from "./slate-plugins/withDefault";
 import withBold, { renderBoldElement } from "./slate-plugins/withBold";
 import withItalic, { renderItalicElement } from "./slate-plugins/withItalic";
-import withList, { renderListElement } from "./slate-plugins/withList";
+import withList, {
+  renderListElement,
+  onKeyDown as onKeyDownForList,
+} from "./slate-plugins/withList";
 
 const initialValue = [
   {
     type: "ELEMENT_P",
     children: [
       {
-        text:""
+        text: "",
       },
     ],
   },
@@ -54,18 +60,9 @@ const MKEditor = () => {
     );
   }, []);
   const onKeyDownHanlder = useCallback((e) => {
-    if (e.ctrlKey && e.altKey && e.code == "Backquote") {
-      e.preventDefault();
-      const editor = editorRef.current;
-      Transforms.insertNodes(
-        editor,
-        { type: "ELEMENT_H1", children: [] },
-        {
-          at: [editor.children.length],
-        }
-      );
-      Transforms.select(editor, [editor.children.length - 1]);
-    }
+    const editor = editorRef.current;
+    onKeyDownForHeading(editor, e);
+    onKeyDownForList(editor, e);
   });
   useEffect(() => {
     ReactEditor.focus(editorRef.current);

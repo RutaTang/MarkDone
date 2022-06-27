@@ -1,4 +1,5 @@
-import { Editor, Range, Transforms, Text, Point, Path } from "slate";
+import { Editor, Range, Transforms, Text, Point, Path, Element } from "slate";
+import { Circle } from "lucide-react";
 
 const renderListElement = ({ attributes, children, element }) => {
   switch (element.type) {
@@ -6,10 +7,27 @@ const renderListElement = ({ attributes, children, element }) => {
       return <ol {...attributes}>{children}</ol>;
     }
     case "ELEMENT_LIST_UNORDERED_WRAPPER": {
-      return <ul {...attributes}>{children}</ul>;
+      return (
+        <ul
+          {...attributes}
+          style={{
+            marginLeft: `${Number(element.level)}rem`,
+          }}
+        >
+          {children}
+        </ul>
+      );
     }
     case "ELEMENT_LIST_ITEM": {
-      return <li {...attributes}>{children}</li>;
+      const { showListItemIcon } = element;
+      return (
+        <li {...attributes} className="flex items-center">
+          <div contentEditable={false}>
+            {showListItemIcon ? <Circle size="0.6rem" /> : ""}
+          </div>
+          <div className="ml-2">{children}</div>
+        </li>
+      );
     }
     default: {
       return null;
@@ -17,11 +35,14 @@ const renderListElement = ({ attributes, children, element }) => {
   }
 };
 
-const createListUnorderedWrapperElement = () => {
-  return { type: "ELEMENT_LIST_UNORDERED_WRAPPER" };
+const createListUnorderedWrapperElement = ({ level }) => {
+  return {
+    type: "ELEMENT_LIST_UNORDERED_WRAPPER",
+    level,
+  };
 };
-const createListItemElement = () => {
-  return { type: "ELEMENT_LIST_ITEM" };
+const createListItemElement = ({ showListItemIcon }) => {
+  return { type: "ELEMENT_LIST_ITEM", showListItemIcon };
 };
 
 const withList = (editor) => {
@@ -33,21 +54,45 @@ const withList = (editor) => {
       const parentNodeEntry = Editor.above(editor, {
         match: (n) => Editor.isBlock(editor, n),
       });
-      const start = Editor.start(
-        editor,
-        parentNodeEntry ? parentNodeEntry[1] : []
-      );
-      const range = { anchor, focus: start };
-      const beforeText = Editor.string(editor, range);
-      const isMached = /^(\*)\1*$/.test(beforeText);
-      if (isMached && !Editor.isEditor(parentNodeEntry[0])) {
-        const numberOfQuote = beforeText.length;
-        Transforms.delete(editor, { at: range });
-        for (let idx = 0; idx < numberOfQuote; idx++) {
-          Transforms.wrapNodes(editor, createListUnorderedWrapperElement());
-          Transforms.wrapNodes(editor, createListItemElement());
+      const parentLisNodeEntry = Editor.above(editor, {
+        match: (n) => n.type == "ELEMENT_LIST_UNORDERED_WRAPPER",
+      });
+      const parentListItemNodeEntry = Editor.above(editor, {
+        match: (n) => n.type == "ELEMENT_LIST_ITEM",
+      });
+
+      if (parentNodeEntry) {
+        const [node, path] = parentNodeEntry;
+        const start = Editor.start(editor, path);
+        const range = { anchor, focus: start };
+        const beforeText = Editor.string(editor, range);
+        const isMached = /^(\*)\1*$/.test(beforeText);
+        if (isMached && !Editor.isEditor(node)) {
+          const numberOfQuote = beforeText.length;
+          Transforms.delete(editor, { at: range });
+          for (let idx = 0; idx < numberOfQuote; idx++) {
+            let level = idx;
+            if (parentLisNodeEntry && parentListItemNodeEntry) {
+              level = parentLisNodeEntry[0].level + idx + 1;
+              Transforms.setNodes(
+                editor,
+                { showListItemIcon: false },
+                {
+                  at: parentListItemNodeEntry[1],
+                }
+              );
+            }
+            Transforms.wrapNodes(
+              editor,
+              createListUnorderedWrapperElement({ level: level })
+            );
+            Transforms.wrapNodes(
+              editor,
+              createListItemElement({ showListItemIcon: true })
+            );
+          }
+          return;
         }
-        return;
       }
     }
     insertText(text);
@@ -94,7 +139,6 @@ const withList = (editor) => {
   //   insertSoftBreak(...args);
   // };
   editor.insertBreak = (...args) => {
-    console.log(editor.children)
     const { selection } = editor;
     if (selection && Range.isCollapsed(selection)) {
       const parentNodeEntry = Editor.above(editor, {
@@ -102,21 +146,18 @@ const withList = (editor) => {
           Editor.isBlock(editor, n) && n.type === "ELEMENT_LIST_ITEM",
       });
       if (parentNodeEntry) {
-        const [node, path] = parentNodeEntry;
+        const [, path] = parentNodeEntry;
         const end = Editor.end(editor, path);
         if (Point.equals(end, selection.anchor)) {
-          // Transforms.unwrapNodes(editor, {
-          //   split: true,
-          //   match: (n) => n.type === "ELEMENT_LIST_ITEM",
-          // });
-          // const nextPath = Path.next(path);
-          // Transforms.insertNodes(
-          //   editor,
-          //   { ...createListItemElement(), children: [{ text: "test" }] },
-          //   {
-          //     at: nextPath,
-          //   }
-          // );
+          insertBreak(...args);
+          Transforms.unwrapNodes(editor, {
+            split: true,
+            match: (n) => n.type === "ELEMENT_LIST_ITEM",
+          });
+          Transforms.wrapNodes(
+            editor,
+            createListItemElement({ showListItemIcon: true })
+          );
           return;
         }
       }
@@ -126,5 +167,94 @@ const withList = (editor) => {
   return editor;
 };
 
+const onKeyDown = (editor, e) => {
+  if (e.code == "Tab" && e.shiftKey) {
+    e.preventDefault();
+    const selection = editor.selection;
+    if (selection && Range.isCollapsed(selection)) {
+      const listItemNodeEntry = Editor.above(editor, {
+        at: selection,
+        match: (n) => n.type === "ELEMENT_LIST_ITEM",
+      });
+      if (listItemNodeEntry) {
+        const listItemRange = Editor.range(editor, listItemNodeEntry[1]);
+        const isSelectionInListItemRange = Range.includes(
+          listItemRange,
+          selection
+        );
+        if (isSelectionInListItemRange) {
+          const ancestentListUnorderedWrapper = [
+            ...Editor.nodes(editor, {
+              match: (n) => n.type === "ELEMENT_LIST_UNORDERED_WRAPPER",
+              mode: "all",
+            }),
+          ];
+          if (ancestentListUnorderedWrapper.length > 1) {
+            Transforms.unwrapNodes(editor, {
+              split: true,
+              match: (n) => n.type === "ELEMENT_LIST_UNORDERED_WRAPPER",
+            });
+            Transforms.liftNodes(editor, {
+              split: true,
+              match: (n) => n.type === "ELEMENT_LIST_ITEM",
+            });
+          } else {
+            Transforms.unwrapNodes(editor, {
+              split: true,
+              match: (n) => n.type === "ELEMENT_LIST_UNORDERED_WRAPPER",
+            });
+            Transforms.unwrapNodes(editor, {
+              split: true,
+              match: (n) => n.type === "ELEMENT_LIST_ITEM",
+            });
+          }
+        }
+      }
+    }
+    return;
+  }
+  if (e.code == "Tab") {
+    e.preventDefault();
+    const selection = editor.selection;
+    if (selection && Range.isCollapsed(selection)) {
+      const listItemNodeEntry = Editor.above(editor, {
+        at: selection,
+        match: (n) => n.type === "ELEMENT_LIST_ITEM",
+      });
+      if (listItemNodeEntry) {
+        const listItemRange = Editor.range(editor, listItemNodeEntry[1]);
+        const isSelectionInListItemRange = Range.includes(
+          listItemRange,
+          selection
+        );
+        if (isSelectionInListItemRange) {
+          const listWrapperNodeEntry = Editor.above(editor, {
+            match: (n) => n.type === "ELEMENT_LIST_UNORDERED_WRAPPER",
+          });
+          Transforms.wrapNodes(
+            editor,
+            createListUnorderedWrapperElement({
+              level: listWrapperNodeEntry[0].level + 1,
+            }),
+            {
+              at: listItemNodeEntry[1],
+            }
+          );
+          Transforms.wrapNodes(
+            editor,
+            createListItemElement({ showListItemIcon: false }),
+            {
+              at: Editor.above(editor, {
+                match: (n) => n.type === "ELEMENT_LIST_UNORDERED_WRAPPER",
+              })[1],
+            }
+          );
+        }
+      }
+    }
+  }
+  return;
+};
+
 export default withList;
-export { renderListElement };
+export { renderListElement, onKeyDown };

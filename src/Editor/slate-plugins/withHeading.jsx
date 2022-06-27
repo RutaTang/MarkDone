@@ -47,7 +47,7 @@ const createHeadingElement = (shortcutvalue) => {
 };
 
 const withHeading = (editor) => {
-  const { deleteBackward, insertText, insertSoftBreak} = editor;
+  const { deleteBackward, insertText, insertSoftBreak } = editor;
 
   // if text is space and parent node is paragraph element
   // delete previous text and set current block node to heading node
@@ -125,5 +125,8 @@ const withHeading = (editor) => {
   return editor;
 };
 
+const onKeyDown = (editor, event) => {
+};
+
 export default withHeading;
-export { renderHeadingElement };
+export { renderHeadingElement,onKeyDown };
