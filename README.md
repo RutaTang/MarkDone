@@ -13,5 +13,5 @@
 - [x] Italic
 - [x] Image
 - [ ] Ordered List
-- [ ] Unordered List
+- [x] Unordered List
 - [ ] Code
