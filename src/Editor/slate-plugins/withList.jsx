@@ -1,6 +1,7 @@
 import { Editor, Range, Transforms, Text, Point, Path, Element } from "slate";
 import { Circle } from "lucide-react";
 
+//TODO: add ordered list feature
 const renderListElement = ({ attributes, children, element }) => {
   switch (element.type) {
     case "ELEMENT_LIST_ORDERED_WRAPPER": {
