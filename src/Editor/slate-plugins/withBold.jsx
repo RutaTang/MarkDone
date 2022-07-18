@@ -97,5 +97,7 @@ const withBold = (editor) => {
   };
   return editor;
 };
+
 export default withBold;
 export { renderBoldElement };
+

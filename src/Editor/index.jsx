@@ -14,10 +14,10 @@ import withImage, { renderImageElement } from "./slate-plugins/withImage";
 import withDefault, { renderDefaultElement } from "./slate-plugins/withDefault";
 import withBold, { renderBoldElement } from "./slate-plugins/withBold";
 import withItalic, { renderItalicElement } from "./slate-plugins/withItalic";
-import withList, {
-  renderListElement,
-  onKeyDown as onKeyDownForList,
-} from "./slate-plugins/withList";
+import withUnorderedList, {
+  renderUnorderedList,
+} from "./slate-plugins/withUnorderedList";
+import withListItem, { renderListItem } from "./slate-plugins/withListItem";
 
 const initialValue = [
   {
@@ -32,13 +32,15 @@ const initialValue = [
 
 const MKEditor = () => {
   const editorRef = useRef(
-    withList(
-      withImage(
-        withItalic(
-          withBold(
-            withLink(
-              withHorizontalRule(
-                withQuote(withHeading(withDefault(withReact(createEditor()))))
+    withListItem(
+      withUnorderedList(
+        withImage(
+          withItalic(
+            withBold(
+              withLink(
+                withHorizontalRule(
+                  withQuote(withHeading(withDefault(withReact(createEditor()))))
+                )
               )
             )
           )
@@ -55,14 +57,14 @@ const MKEditor = () => {
       renderBoldElement(props) ||
       renderItalicElement(props) ||
       renderImageElement(props) ||
-      renderListElement(props) ||
+      renderUnorderedList(props) ||
+      renderListItem(props) ||
       renderDefaultElement(props)
     );
   }, []);
   const onKeyDownHanlder = useCallback((e) => {
     const editor = editorRef.current;
     onKeyDownForHeading(editor, e);
-    onKeyDownForList(editor, e);
   });
   useEffect(() => {
     ReactEditor.focus(editorRef.current);
