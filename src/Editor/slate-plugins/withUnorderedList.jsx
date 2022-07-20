@@ -54,6 +54,7 @@ const withUnorderedList = (editor) => {
       });
       if (parentBlock) {
         const end = Editor.end(editor, parentBlock[1]);
+        const start = Editor.start(editor, parentBlock[1]);
         // if selection at ends, insert list item after current block
         if (Point.equals(end, selection.focus)) {
           const listItem = { type: "ELEMENT_LIST_ITEM", children: [] };
@@ -63,14 +64,12 @@ const withUnorderedList = (editor) => {
           });
           Transforms.select(editor, Editor.end(editor, instertPath));
           return;
-        }
-        //else if selection at start or middle, extract nodes after current point and insert into new list item
-        else {
-          Transforms.splitNodes(editor, { at: selection });
-          // Transforms.unwrapNodes(editor, { at: selection,match:n=>n.type==="ELEMENT_LIST_ITEM",split:true});
-          // const block = Editor.above(editor,n=>Editor.isBlock(editor,n))
-          // const end = Editor.end(editor,block[1])
-          // Transforms.select(editor,end)
+        } else if (Point.equals(start, selection.anchor)) {
+          Transforms.insertNodes(
+            editor,
+            { type: "ELEMENT_P",children: [{text: ""}] },
+            { at: selection }
+          );
           let currentBlockPath = Editor.above(editor)[1];
           const [start, end] = [
             Editor.start(editor, currentBlockPath),
@@ -78,7 +77,19 @@ const withUnorderedList = (editor) => {
           ];
           const range = { anchor: start, focus: end };
           Transforms.liftNodes(editor, { at: range });
-          Transforms.wrapNodes(editor, { type: "ELEMENT_LIST_ITEM" })
+          Transforms.wrapNodes(editor, { type: "ELEMENT_LIST_ITEM" });
+        }
+        //else if selection at middle, extract nodes after current point and insert into new list item
+        else {
+          Transforms.splitNodes(editor, { at: selection });
+          let currentBlockPath = Editor.above(editor)[1];
+          const [start, end] = [
+            Editor.start(editor, currentBlockPath),
+            Editor.end(editor, currentBlockPath),
+          ];
+          const range = { anchor: start, focus: end };
+          Transforms.liftNodes(editor, { at: range });
+          Transforms.wrapNodes(editor, { type: "ELEMENT_LIST_ITEM" });
         }
         return;
       }

@@ -64,6 +64,7 @@ const MKEditor = () => {
   }, []);
   const onKeyDownHanlder = useCallback((e) => {
     const editor = editorRef.current;
+    //register keydown event for plugins
     onKeyDownForHeading(editor, e);
   });
   useEffect(() => {
