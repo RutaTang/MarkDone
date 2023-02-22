@@ -13,12 +13,13 @@ if &shortmess =~ 'A'
 else
   set shortmess=aoO
 endif
-badd +0 ~/Coding/Web/MarkDone/render/src/editor/nodes/HeadingNode.tsx
+badd +1 ~/Coding/Web/MarkDone/render/src/App.tsx
+badd +0 ~/Coding/Web/MarkDone/render/src/editor/plugins/DefaultPlugin.tsx
 argglobal
 %argdel
-edit ~/Coding/Web/MarkDone/render/src/editor/nodes/HeadingNode.tsx
+edit ~/Coding/Web/MarkDone/render/src/editor/plugins/DefaultPlugin.tsx
 argglobal
-balt ~/Coding/Web/MarkDone/render/src/editor/nodes/HeadingNode.tsx
+balt ~/Coding/Web/MarkDone/render/src/App.tsx
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -29,11 +30,11 @@ setlocal fdn=20
 setlocal fen
 silent! normal! zE
 let &fdl = &fdl
-let s:l = 1 - ((0 * winheight(0) + 25) / 51)
+let s:l = 13 - ((12 * winheight(0) + 25) / 51)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 1
+keepjumps 13
 normal! 0
 tabnext 1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0 && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
