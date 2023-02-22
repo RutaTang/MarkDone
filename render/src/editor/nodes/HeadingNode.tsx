@@ -8,7 +8,7 @@ export class HeadingNode extends ElementNode {
     }
 
     static clone(node: HeadingNode): HeadingNode {
-        return new HeadingNode(node.__level, node.key);
+        return new HeadingNode(node.__level, node.__key);
     }
 
     constructor(level: number = 1, key?: string) {

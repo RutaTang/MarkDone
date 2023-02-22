@@ -1,6 +1,7 @@
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin'
 import { DefaultPlugin } from './plugins/DefaultPlugin';
 import { TravalTreeViewPlugin } from './plugins/TravalTreeViewPlugin';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
@@ -23,6 +24,7 @@ function Editor() {
                 placeholder={null}
                 ErrorBoundary={LexicalErrorBoundary}
             />
+            <OnChangePlugin onChange={console.log}/>
             <DefaultPlugin />
             <TravalTreeViewPlugin />
             <HeadingPlugin />

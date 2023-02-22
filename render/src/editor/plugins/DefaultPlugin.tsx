@@ -1,6 +1,6 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { $findMatchingParent } from '@lexical/utils'
-import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isElementNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_NORMAL, ElementNode, KEY_ENTER_COMMAND } from 'lexical';
+import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isElementNode, $isParagraphNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_CRITICAL, COMMAND_PRIORITY_NORMAL, ElementNode, KEY_BACKSPACE_COMMAND, KEY_ENTER_COMMAND } from 'lexical';
 import { useEffect, useRef } from 'react';
 
 function DefaultPlugin() {
@@ -8,8 +8,9 @@ function DefaultPlugin() {
     useEffect(() => {
         //auto focus
         editor.focus()
-        //normalization: each line is a paragraph
-        editor.registerCommand(KEY_ENTER_COMMAND, (e) => {
+
+        //normalization (key enter): each line is a paragraph
+        const unregisterKEC = editor.registerCommand(KEY_ENTER_COMMAND, (e) => {
             //TODO: escape code and math block
             const selection = $getSelection()
             if (selection && $isRangeSelection(selection) && selection.isCollapsed()) {
@@ -47,7 +48,7 @@ function DefaultPlugin() {
                     else if (selection.focus.offset === node.getTextContent().length) {
                         elementParent.insertAfter(paragraphNodeTobeInserted)
                         paragraphNodeTobeInserted.select()
-                    } 
+                    }
                     // in the middle of the text node, splits the text node
                     else {
                         let textNodes = node.splitText(selection.focus.offset)
@@ -67,6 +68,34 @@ function DefaultPlugin() {
             }
             return false
         }, COMMAND_PRIORITY_NORMAL)
+
+        //normalization (key backward): delete back to a paragraph, especially for the first line
+        const unregisterKBC = editor.registerCommand(KEY_BACKSPACE_COMMAND, (e) => {
+            const selection = $getSelection()
+            if (selection && $isRangeSelection(selection) && selection.isCollapsed()) {
+                // check if selection is in only a signle node and get the node
+                const nodes = selection.getNodes()
+                if (!nodes || nodes.length !== 1) {
+                    return false
+                }
+                const node = nodes[0]
+
+                // replace the node with a paragraph node if it is not a paragraph node and it is empty
+                if ($isElementNode(node) && node.getChildrenSize() === 0 && !$isParagraphNode(node)) {
+                    const paragraphNode = $createParagraphNode()
+                    node.replace(paragraphNode, false)
+                    paragraphNode.select()
+                    e?.preventDefault()
+                    return true
+                }
+            }
+
+            return false
+        }, COMMAND_PRIORITY_NORMAL)
+        return () => {
+            unregisterKEC()
+            unregisterKBC()
+        }
     }, [editor])
     return null
 
