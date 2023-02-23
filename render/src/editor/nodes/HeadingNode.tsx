@@ -29,7 +29,7 @@ export class HeadingNode extends ElementNode {
     }
 }
 
-export function $isHeadingNode(node: Node): boolean {
+export function $isHeadingNode(node:any): boolean {
     return node instanceof HeadingNode;
 }
 

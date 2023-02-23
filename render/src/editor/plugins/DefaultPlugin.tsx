@@ -1,7 +1,8 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { $findMatchingParent } from '@lexical/utils'
-import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isElementNode, $isParagraphNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_CRITICAL, COMMAND_PRIORITY_NORMAL, ElementNode, KEY_BACKSPACE_COMMAND, KEY_ENTER_COMMAND } from 'lexical';
+import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isElementNode, $isParagraphNode, $isRangeSelection, $isTextNode, $setSelection, COMMAND_PRIORITY_CRITICAL, COMMAND_PRIORITY_NORMAL, ElementNode, KEY_BACKSPACE_COMMAND, KEY_ENTER_COMMAND } from 'lexical';
 import { useEffect, useRef } from 'react';
+import { $isQuoteNode } from '../nodes/QuoteNode';
 
 function DefaultPlugin() {
     const [editor] = useLexicalComposerContext()
@@ -69,7 +70,7 @@ function DefaultPlugin() {
             return false
         }, COMMAND_PRIORITY_NORMAL)
 
-        //normalization (key backward): delete back to a paragraph, especially for the first line
+        //normalization (key backward): delete back to a paragraph 
         const unregisterKBC = editor.registerCommand(KEY_BACKSPACE_COMMAND, (e) => {
             const selection = $getSelection()
             if (selection && $isRangeSelection(selection) && selection.isCollapsed()) {
@@ -80,18 +81,69 @@ function DefaultPlugin() {
                 }
                 const node = nodes[0]
 
-                // replace the node with a paragraph node if it is not a paragraph node and it is empty
-                if ($isElementNode(node) && node.getChildrenSize() === 0 && !$isParagraphNode(node)) {
-                    const paragraphNode = $createParagraphNode()
-                    node.replace(paragraphNode, false)
-                    paragraphNode.select()
+                if ($isElementNode(node)) {
+                    // if node is at the first line, replace with paragraph node
+                    if (node.getParent() === $getRoot() && node.getPreviousSiblings().length === 0) {
+                        const paragraphNode = $createParagraphNode()
+                        node.replace(paragraphNode, false)
+                        paragraphNode.select()
+                        e?.preventDefault()
+                        return true
+                    }
+                    // or just remove it
+                    node.remove()
                     e?.preventDefault()
                     return true
+                }
+
+                // if the node is text node and selection is at the beginning of the text node, replace parent node with grand parent node or with paragraph node dependings on whether grand parent node is root
+                if ($isTextNode(node) && selection.focus.offset === 0) {
+                    let parent = node.getParent()
+                    let grandParent = node.getParent()?.getParent()
+                    if (parent && grandParent) {
+                        // gradparent is not root
+                        if (grandParent !== $getRoot()) {
+                            let children = parent.getChildren()
+                            parent.remove()
+                            for (let child of children) {
+                                grandParent.append(child)
+                            }
+                        }
+                        // gradparent is root
+                        else {
+                            const upSibling = parent.getPreviousSibling()
+                            if (upSibling === null || !$isElementNode(upSibling)) {
+                                return false
+                            }
+                            // if not the first line, remove parent and append children to up sibling
+                            if (upSibling) {
+                                const lastChild = upSibling.getLastChild()
+
+                                const children = parent.getChildren()
+                                parent.remove()
+                                for (let child of children) {
+                                    upSibling.append(child)
+                                }
+                                // select the last child of up sibling
+                                if (lastChild && $isTextNode(lastChild)) {
+                                    lastChild.select()
+                                }
+                            } else {
+                                let paragraphNode = $createParagraphNode()
+                                parent.replace(paragraphNode, true)
+                            }
+                        }
+                        e?.preventDefault()
+                        return true
+                    }
+                    return false
                 }
             }
 
             return false
         }, COMMAND_PRIORITY_NORMAL)
+
+
         return () => {
             unregisterKEC()
             unregisterKBC()
